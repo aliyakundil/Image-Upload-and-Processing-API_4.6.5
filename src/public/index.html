@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Processing API</title>
+</head>
+<body>
+  <h1>Image Processing API Demo</h1>
+
+  <div>
+    <h2>Upload Image</h2>
+    <input type="file" id="imageFile" accept="image/*">
+    <button onclick="uploadImage()">Upload</button>
+  </div>
+
+  <div id="result"></div>
+
+  <script>
+    async function uploadImage() {
+      const fileInput = document.getElementById('imageFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('Please select an image');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const response = await fetch('http://localhost:3000/api/upload/responsive', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        displayResults(data);
+      } catch (error) {
+        console.error('Upload failed:', error);
+      }
+    }
+
+    function displayResults(data) {
+      const resultDiv = document.getElementById('result');
+
+      let html = '<h3>Upload Successful!</h3>';
+      html += '<h4>Responsive Images:</h4><ul>';
+
+      data.responsive.forEach(img => {
+        html += `<li>${img.size}: ${img.width}px - <a href="${img.url}" target="_blank">View</a></li>`;
+      });
+
+      html += '</ul>';
+      resultDiv.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

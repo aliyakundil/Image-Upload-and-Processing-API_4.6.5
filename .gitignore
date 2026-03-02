@@ -1,0 +1,6 @@
+uploads/
+outputs/
+processed/
+node_modules/
+.env
+dist/
