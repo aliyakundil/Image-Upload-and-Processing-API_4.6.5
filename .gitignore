@@ -1,6 +1,7 @@
 uploads/
 outputs/
 processed/
+assets/
 node_modules/
 .env
 dist/

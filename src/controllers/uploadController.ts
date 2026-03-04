@@ -3,7 +3,7 @@ import path from "path";
 import fileDirName from "../utils/dirname.js";
 import fs from "fs/promises";
 import { fileTypeFromBuffer } from "file-type";
-import reduceFileSize from "../config/sharp.js";
+import { generateResponsiveSizes } from "../services/imageService.js";
 import File from "../models/File.js";
 
 const { __dirname } = fileDirName(import.meta.url)
@@ -19,7 +19,7 @@ export async function getHomePage(req: Request, res: Response) {
 
 export async function postResizeImages(req: Request, res: Response) {
   const files = req.files as Express.Multer.File[];
-  const downloadLinks: string[] = [];
+  const allResponsive: any[] = [];
   const tempPaths: string[] = [];
   const outputPaths: string[] = [];
   let validationError: string | null = null;
@@ -75,11 +75,23 @@ export async function postResizeImages(req: Request, res: Response) {
       const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
       const uniqueName = `${Date.now()}_${Math.floor(Math.random() * 10000)}_${safeName}`;
       const outputfileDir = path.join(__dirname, '..', '..', 'uploads', uniqueName);
-      
-      await reduceFileSize(file.path, outputfileDir);
 
-      downloadLinks.push(`/uploads/${uniqueName}`);
-      console.log(downloadLinks)
+      const buffer = await fs.readFile(file.path);
+      const fileType = await fileTypeFromBuffer(buffer);
+
+      const outputFormat =
+        fileType && allowedTypes.includes(fileType.mime)
+          ? fileType.ext
+          : "jpeg";
+      
+      const responsiveImages = await generateResponsiveSizes(
+        file.path,
+        outputfileDir,
+        outputFormat
+      );
+
+      allResponsive.push(...responsiveImages);
+
       const fileDoc = new File({
         originalName: file.originalname,
         savedName: uniqueName,
@@ -94,11 +106,7 @@ export async function postResizeImages(req: Request, res: Response) {
     }
 
     return res.json({
-        responsive: downloadLinks.map((link, index) => ({
-            size: `size-${index}`,
-            width: 0, 
-            url: link
-        }))
+        responsive: allResponsive
     });
   } catch (err) {
     console.error("REAL ERROR:", err);

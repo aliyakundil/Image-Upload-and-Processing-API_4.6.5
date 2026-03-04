@@ -4,6 +4,7 @@ import morgan from "morgan";
 import fileDirName from "./utils/dirname.js";
 import router from "./routes/upload.js";
 import processRouter from './routes/process.js';
+import healthRouter from "./routes/health.js";
 import { connectToDb } from "./config/database.js";
 
 const app = express();
@@ -29,6 +30,7 @@ const publickDirPath = path.join(__dirname, 'public');
 app.use(express.static(publickDirPath));
 
 app.use(morgan('dev'));
+app.use("/health", healthRouter);
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use('/api/upload', router);
 app.use('/api/process', processRouter);

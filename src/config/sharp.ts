@@ -1,10 +1,11 @@
 import sharp from "sharp";
 
+sharp.cache({
+  memory: 50,
+  files: 20,
+  items: 100
+});
 
-export default function reduceFileSize(filePath: string, outputPath: string) {
-  return sharp(filePath)
-    .resize({ width: 1080, withoutEnlargement: true })
-    .toFormat('png')
-    .png({ quality: 85 })
-    .toFile(outputPath)
-}
+sharp.concurrency(2);
+
+export default sharp;
